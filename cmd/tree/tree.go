@@ -39,7 +39,7 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	cat := catalog.New("local")
+	cat := catalog.New("memory")
 	err = p.Commit(cat)
 	if err != nil {
 		slog.Error("Failed to commit to catalog.", "error", err)
