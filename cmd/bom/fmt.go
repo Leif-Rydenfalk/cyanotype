@@ -7,7 +7,7 @@ import (
 )
 
 func getHeader() []string {
-	return []string{"Part ID", "Part Number", "Name", "Quantity"}
+	return []string{"Name", "Quantity"}
 }
 
 func FmtCounterAsCSV(counter map[string]float64) {
