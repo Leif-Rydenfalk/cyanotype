@@ -59,6 +59,5 @@ func run(cmd *cobra.Command, args []string) error {
 		slog.Error("Failed to export.", "error", err)
 		return err
 	}
-	os.WriteFile(bpcPath, append(output, '\n'), 0o644)
-	return nil
+	return os.WriteFile(bpcPath, append(output, '\n'), 0o644)
 }
