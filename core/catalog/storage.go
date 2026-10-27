@@ -24,6 +24,11 @@ type Storage interface {
 	SaveArtifact(artifact *model.Artifact) error
 }
 
+// TODO: Consider replacing file-based local storage with SQLite.
+// Extract the PostgreSQL catalog implementation from BomHub into a
+// reusable SQL backend supporting both SQLite and PostgreSQL.
+// BomHub should access the SQL catalog directly, while remote CLI
+// clients continue using the HTTP API.
 type LocalStorage struct{}
 
 func digestToPath(digest string) (string, error) {
