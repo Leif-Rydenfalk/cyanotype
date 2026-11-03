@@ -9,31 +9,7 @@ import (
 	"github.com/tychonis/cyanotype/model"
 )
 
-func (p *Parser) ParseArtifacts(ctx *ParserContext, block *hclsyntax.Block) ([]*model.Artifact, error) {
-	if block == nil {
-		return nil, fmt.Errorf("block is nil")
-	}
-
-	var artifacts []*model.Artifact
-
-	for _, child := range block.Body.Blocks {
-		if child.Type != "artifact" {
-			continue
-		}
-
-		artifact, err := p.parseArtifactBlock(ctx, child)
-		if err != nil {
-			return nil, err
-		}
-
-		p.Artifacts[artifact.Digest] = artifact
-		artifacts = append(artifacts, artifact)
-	}
-
-	return artifacts, nil
-}
-
-func (p *Parser) getDigest(_ *ParserContext, source string) (string, error) {
+func (p *Parser) getArtifactDigest(_ *ParserContext, source string) (string, error) {
 	parsed, err := url.Parse(source)
 	if err != nil {
 		return "", err
@@ -83,7 +59,7 @@ func (p *Parser) parseArtifactBlock(ctx *ParserContext, block *hclsyntax.Block) 
 		return nil, err
 	}
 	artifact.Source = source
-	artifact.Digest, err = p.getDigest(ctx, source)
+	artifact.Digest, err = p.getArtifactDigest(ctx, source)
 	if err != nil {
 		return nil, err
 	}

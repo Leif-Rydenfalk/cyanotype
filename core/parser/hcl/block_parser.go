@@ -134,10 +134,11 @@ func (p *Parser) parseItemBlock(ctx *ParserContext, block *hclsyntax.Block) (*mo
 		return item, err
 	}
 
-	item.Content.Artifacts, err = p.ParseArtifacts(ctx, block)
+	subContent, err := p.ParseSubBlocks(ctx, block)
 	if err != nil {
 		return item, err
 	}
+	item.Content.Artifacts = subContent.Artifacts
 
 	// Digest need to be computed before building companion processes,
 	// because the companion processes will reference the item digest.
@@ -180,10 +181,12 @@ func (p *Parser) parseCoItemBlock(ctx *ParserContext, block *hclsyntax.Block) (*
 	if err != nil {
 		return coItem, err
 	}
-	coItem.Content.Artifacts, err = p.ParseArtifacts(ctx, block)
+
+	subContent, err := p.ParseSubBlocks(ctx, block)
 	if err != nil {
 		return coItem, err
 	}
+	coItem.Content.Artifacts = subContent.Artifacts
 
 	coItem.Digest, err = digest.SHA256FromSymbol(coItem)
 	return coItem, err
