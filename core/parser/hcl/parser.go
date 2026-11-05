@@ -199,7 +199,7 @@ func (p *Parser) processModuleScope(m *symbols.ModuleScope) error {
 			}
 		case *UnprocessedSymbol:
 			slog.Debug("Process item", "item", s)
-			_, err := p.ParseSymbol(s)
+			_, err := p.ProcessSymbol(s)
 			if err != nil {
 				return err
 			}
@@ -224,7 +224,7 @@ func (p *Parser) resolveBOMLineRef(ctx *ParserContext, ref Ref) (*model.Item, er
 			if !ok {
 				return nil, errors.New("wrong symbol type")
 			}
-			itemSym, err = p.ParseSymbol(unprocessed)
+			itemSym, err = p.ProcessSymbol(unprocessed)
 			if err != nil {
 				return nil, err
 			}

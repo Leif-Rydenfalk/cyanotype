@@ -1,7 +1,6 @@
 package hcl
 
 import (
-	"errors"
 	"log/slog"
 
 	"github.com/tychonis/cyanotype/core/catalog"
@@ -33,14 +32,10 @@ func (p *Parser) commit(cat *catalog.Catalog, dryrun bool) error {
 	}
 	revision := cat.NewRevision()
 	change := 0
-	for qualifier, symDigest := range p.Symbols.QualifierIndex {
+	for qualifier, newSym := range p.Symbols.ConcreteSymbols {
 		oldSym, err := cat.FindCurrent(qualifier)
 		if err != nil && err != catalog.ErrNotFound {
 			return err
-		}
-		newSym, ok := p.Symbols.ConcreteSymbols[symDigest]
-		if !ok {
-			return errors.New("symbol not found in symbol table")
 		}
 		if !p.isSymbolChanged(oldSym, newSym) {
 			continue
@@ -51,7 +46,7 @@ func (p *Parser) commit(cat *catalog.Catalog, dryrun bool) error {
 				return err
 			}
 		} else {
-			slog.Info("New symbol", "qualifier", qualifier, "digest", symDigest)
+			slog.Info("New symbol", "qualifier", qualifier, "digest", newSym.GetDigest())
 		}
 		change++
 	}

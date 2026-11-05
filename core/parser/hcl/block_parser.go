@@ -15,7 +15,7 @@ import (
 	"github.com/tychonis/cyanotype/model"
 )
 
-func (p *Parser) ParseSymbol(s *UnprocessedSymbol) (sym model.ConcreteSymbol, err error) {
+func (p *Parser) ProcessSymbol(s *UnprocessedSymbol) (sym model.ConcreteSymbol, err error) {
 	// Already parsed before.
 	if s.qualifier != "" {
 		return p.Symbols.FindConcreteSymbol(s.qualifier)
