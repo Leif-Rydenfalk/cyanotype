@@ -1,8 +1,6 @@
 package model
 
 import (
-	"errors"
-
 	"github.com/tychonis/cyanotype/internal/stable"
 )
 
@@ -39,14 +37,6 @@ type ItemContent struct {
 	Details    stable.Map  `json:"details" yaml:"details"`
 }
 
-// TODO: implement attrs?
-func (i *Item) Resolve(path []string) (Symbol, error) {
-	if len(path) > 0 {
-		return nil, errors.New("attr not implemented")
-	}
-	return i, nil
-}
-
 func (i *Item) GetQualifier() string {
 	return i.Qualifier
 }
@@ -64,14 +54,6 @@ func (i *Item) GetName() string {
 		return i.Content.Name
 	}
 	return i.GetQualifier()
-}
-
-// TODO: implement attrs?
-func (ci *CoItem) Resolve(path []string) (Symbol, error) {
-	if len(path) > 0 {
-		return nil, errors.New("attr not implemented")
-	}
-	return ci, nil
 }
 
 func (ci *CoItem) GetQualifier() string {

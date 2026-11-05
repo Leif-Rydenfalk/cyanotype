@@ -2,7 +2,6 @@ package process
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/tychonis/cyanotype/model"
@@ -79,23 +78,6 @@ func (p *Process) Output() []*model.BOMLine {
 	return p.Content.GetOutput()
 }
 
-func (p *Process) Resolve(path []string) (model.Symbol, error) {
-	if len(path) == 0 {
-		return p, nil
-	}
-	if len(path) < 2 {
-		return nil, errors.New("insufficient path length")
-	}
-	switch path[0] {
-	case "input":
-		return nil, nil
-	case "output":
-		return nil, nil
-	default:
-		return nil, errors.New("illformed token")
-	}
-}
-
 func (p *Process) GetQualifier() string {
 	return p.Qualifier
 }
@@ -114,23 +96,6 @@ func (cp *CoProcess) Input() []*model.BOMLine {
 
 func (cp *CoProcess) Output() []*model.BOMLine {
 	return cp.Content.GetOutput()
-}
-
-func (cp *CoProcess) Resolve(path []string) (model.Symbol, error) {
-	if len(path) == 0 {
-		return cp, nil
-	}
-	if len(path) < 2 {
-		return nil, errors.New("insufficient path length")
-	}
-	switch path[0] {
-	case "input":
-		return nil, nil
-	case "output":
-		return nil, nil
-	default:
-		return nil, errors.New("illformed token")
-	}
 }
 
 func (cp *CoProcess) GetQualifier() string {

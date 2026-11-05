@@ -2,12 +2,11 @@ package model
 
 type Qualifier = string
 
-type Symbol interface {
-	Resolve(path []string) (Symbol, error)
+type Resolver interface {
+	Resolve(path []string) (Resolver, error)
 }
 
 type ConcreteSymbol interface {
-	Symbol
 	GetType() string
 	GetQualifier() Qualifier
 	GetDigest() Digest

@@ -168,7 +168,15 @@ func (p *Parser) resolveContractsID(ctx *ParserContext, contracts []Ref) ([]mode
 		if err != nil {
 			return nil, err
 		}
-		contract, ok := sym.(*model.Contract)
+		unprocessed, ok := sym.(*UnprocessedSymbol)
+		if !ok {
+			return nil, errors.New("wrong symbol type")
+		}
+		contractSym, err := p.ProcessSymbol(unprocessed)
+		if err != nil {
+			return nil, err
+		}
+		contract, ok := contractSym.(*model.Contract)
 		if !ok {
 			return nil, errors.New("implement non contract")
 		}

@@ -11,10 +11,10 @@ type Import struct {
 	Symbols    *SymbolTable
 }
 
-func (i *Import) Resolve(path []string) (model.Symbol, error) {
+func (i *Import) Resolve(path []string) (model.Resolver, error) {
 	m, ok := i.Symbols.Modules[i.Identifier].Symbols[path[0]]
 	if !ok {
-		return nil, errors.New("sybmol not existed")
+		return nil, errors.New("symbol not existed")
 	}
 	return m.Resolve(path[1:])
 }

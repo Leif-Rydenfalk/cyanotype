@@ -22,7 +22,7 @@ func SHA256FromReader(r io.Reader) (string, error) {
 	return hex.EncodeToString(sum), nil
 }
 
-func SHA256FromSymbol(s model.Symbol) (string, error) {
+func SHA256FromSymbol(s model.ConcreteSymbol) (string, error) {
 	data, err := serializer.Serialize(s)
 	if err != nil {
 		return "", err

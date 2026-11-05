@@ -1,8 +1,6 @@
 package model
 
 import (
-	"errors"
-
 	"github.com/tychonis/cyanotype/internal/stable"
 )
 
@@ -15,14 +13,6 @@ type Contract struct {
 	Params    stable.Map `json:"params" yaml:"params"`
 
 	Digest ContractID `json:"-" yaml:"-"`
-}
-
-// TODO: implement attrs?
-func (c *Contract) Resolve(path []string) (Symbol, error) {
-	if len(path) > 0 {
-		return nil, errors.New("attr not implemented")
-	}
-	return c, nil
 }
 
 func (c *Contract) Fulfill(c2 *Contract) bool {

@@ -6,27 +6,35 @@ import (
 	"github.com/tychonis/cyanotype/model"
 )
 
+type Identifier = string
+
+// SymbolTable maintains separate indexes for different compilation stages.
+// Modules holds source declarations (Import and UnprocessedSymbol),
+// organized by module scope for name resolution.
+// ConcreteSymbols hold processed symbols, indexed by fully qualified name.
+//
+// The different organizations are historical; they may be unified later.
 type SymbolTable struct {
-	Modules         map[string]*ModuleScope
+	Modules         map[Identifier]*ModuleScope
 	ConcreteSymbols map[model.Qualifier]model.ConcreteSymbol
 }
 
 type ModuleScope struct {
-	Symbols map[string]model.Symbol
+	Symbols map[Identifier]model.Resolver
 }
 
 func NewSymbolTable() *SymbolTable {
 	return &SymbolTable{
-		Modules:         make(map[string]*ModuleScope),
+		Modules:         make(map[Identifier]*ModuleScope),
 		ConcreteSymbols: make(map[model.Qualifier]model.ConcreteSymbol),
 	}
 }
 
 func NewModuleScope() *ModuleScope {
-	return &ModuleScope{Symbols: make(map[string]model.Symbol)}
+	return &ModuleScope{Symbols: make(map[Identifier]model.Resolver)}
 }
 
-func (t *SymbolTable) AddSymbol(module string, name string, symbol model.Symbol) error {
+func (t *SymbolTable) AddSymbol(module Identifier, name Identifier, symbol model.Resolver) error {
 	if t.Modules[module] == nil {
 		t.Modules[module] = NewModuleScope()
 	}
@@ -53,7 +61,7 @@ func (t *SymbolTable) FindConcreteSymbol(qualifier model.Qualifier) (model.Concr
 	return sym, nil
 }
 
-func (m *ModuleScope) Resolve(ref []string) (model.Symbol, error) {
+func (m *ModuleScope) Resolve(ref []string) (model.Resolver, error) {
 	if len(ref) <= 0 {
 		return m, nil
 	}

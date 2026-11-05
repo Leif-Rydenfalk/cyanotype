@@ -72,7 +72,7 @@ func NewParser() *Parser {
 	}
 }
 
-func (p *Parser) Resolve(ctx *ParserContext, ref []string) (model.Symbol, error) {
+func (p *Parser) Resolve(ctx *ParserContext, ref []string) (model.Resolver, error) {
 	slog.Debug("Resolving ref", "module", ctx.CurrentModule(), "ref", ref)
 	mod, ok := p.Symbols.Modules[ref[0]]
 	if ok {

@@ -13,6 +13,6 @@ type UnprocessedSymbol struct {
 	qualifier string
 }
 
-func (us *UnprocessedSymbol) Resolve(path []string) (model.Symbol, error) {
+func (us *UnprocessedSymbol) Resolve(path []string) (model.Resolver, error) {
 	return us, nil
 }
