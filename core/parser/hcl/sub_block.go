@@ -31,6 +31,16 @@ func (p *Parser) ParseSubBlocks(ctx *ParserContext, block *hclsyntax.Block) (*Su
 
 			p.Artifacts[artifact.Digest] = artifact
 			content.Artifacts = append(content.Artifacts, artifact)
+		case "contract":
+			_, err := p.parseContractBlock(ctx, child)
+			if err != nil {
+				return nil, err
+			}
+		case "operation":
+			err := p.parseOperationBlock(ctx, child)
+			if err != nil {
+				return nil, err
+			}
 		default:
 			slog.Warn("Unrecognized sub block, skipping", slog.String("type", child.Type))
 			continue

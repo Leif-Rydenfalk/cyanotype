@@ -147,9 +147,15 @@ func (p *Parser) parseItemBlock(ctx *ParserContext, block *hclsyntax.Block) (*mo
 		return item, err
 	}
 
-	_, err = p.buildCompanionForItem(ctx, item, pc)
+	companion, err := p.buildCompanionForItem(ctx, item, pc)
 	if err != nil {
 		return nil, err
+	}
+	for _, s := range companion {
+		err := p.Symbols.RegisterConcreteSymbol(s)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return item, err
 }
@@ -216,30 +222,4 @@ func (p *Parser) parseCoProcessBlock(ctx *ParserContext, block *hclsyntax.Block)
 	}
 	ret.Digest, err = digest.SHA256FromSymbol(ret)
 	return
-}
-
-func (p *Parser) parseContractBlock(ctx *ParserContext, block *hclsyntax.Block) (*model.Contract, error) {
-	name := block.Labels[0]
-	attrs, diags := block.Body.JustAttributes()
-	if diags.HasErrors() {
-		return nil, diags
-	}
-	params := make(map[string]any)
-	for attr := range attrs {
-		// TODO: support more types?
-		param, _ := getString(attrs, attr)
-		params[attr] = param
-	}
-	contract := &model.Contract{
-		Type:      "contract",
-		Name:      name,
-		Qualifier: ctx.NameToQualifier(name),
-		Params:    params,
-	}
-	digest, err := digest.SHA256FromSymbol(contract)
-	if err != nil {
-		return contract, err
-	}
-	contract.Digest = digest
-	return contract, nil
 }

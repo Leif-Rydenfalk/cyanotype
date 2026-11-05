@@ -32,6 +32,23 @@ func (q Quaternion) Rotate(v Vec3) Vec3 {
 	}
 }
 
+func (q Quaternion) Inverse() Quaternion {
+	n := q[0]*q[0] + q[1]*q[1] + q[2]*q[2] + q[3]*q[3]
+	return Quaternion{-q[0] / n, -q[1] / n, -q[2] / n, q[3] / n}
+}
+
+func (p *Placement) Inverse() *Placement {
+	r := p.Rotation.Inverse()
+	return &Placement{
+		Rotation: r,
+		Position: r.Rotate(Vec3{
+			-p.Position[0],
+			-p.Position[1],
+			-p.Position[2],
+		}),
+	}
+}
+
 func (v Vec3) Add(v2 Vec3) Vec3 {
 	return Vec3{
 		v[0] + v2[0],
@@ -60,4 +77,16 @@ func (p *Placement) Compose(p2 *Placement) *Placement {
 		Rotation: p2.Rotation.Mul(p.Rotation),
 		Position: p2.Rotation.Rotate(p.Position).Add(p2.Position),
 	}
+}
+
+func (p *Placement) Align(p_ref *Placement, p2_ref *Placement) *Placement {
+	return p2_ref.Inverse().Compose(p_ref).Compose(p)
+}
+
+func (p *Placement) Mate(p_ref *Placement, p2_ref *Placement) *Placement {
+	flip := &Placement{
+		Rotation: Quaternion{1, 0, 0, 0},
+		Position: IdentityVec3,
+	}
+	return p2_ref.Inverse().Compose(flip).Compose(p_ref).Compose(p)
 }

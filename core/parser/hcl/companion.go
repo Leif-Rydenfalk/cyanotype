@@ -10,6 +10,8 @@ import (
 	"github.com/tychonis/cyanotype/model"
 )
 
+type Companion []model.ConcreteSymbol
+
 func (p *Parser) buildCompanionCoItem(item *model.Item) (*model.CoItem, error) {
 	var err error
 	co := &model.CoItem{}
@@ -19,10 +21,7 @@ func (p *Parser) buildCompanionCoItem(item *model.Item) (*model.CoItem, error) {
 		Name: "Implicit requirements for " + item.Content.Name,
 	}
 	co.Digest, err = digest.SHA256FromSymbol(co)
-	if err != nil {
-		return co, err
-	}
-	return co, p.Symbols.RegisterConcreteSymbol(co)
+	return co, err
 }
 
 func (p *Parser) buildCompanionCoProcess(item *model.Item, coItem *model.CoItem) (*process.CoProcess, error) {
@@ -48,10 +47,7 @@ func (p *Parser) buildCompanionCoProcess(item *model.Item, coItem *model.CoItem)
 	cp.Qualifier = qualifier.ImplicitCoProcess(item)
 	cp.Content = content
 	cp.Digest, err = digest.SHA256FromSymbol(cp)
-	if err != nil {
-		return cp, err
-	}
-	return cp, p.Symbols.RegisterConcreteSymbol(cp)
+	return cp, err
 }
 
 func (p *Parser) buildCompanionProcess(item *model.Item, pc process.ProcessContent) (*process.Process, error) {
@@ -82,39 +78,30 @@ func (p *Parser) buildCompanionProcess(item *model.Item, pc process.ProcessConte
 	process.Qualifier = qualifier.ImplicitProcess(item)
 	process.Content = pc
 	process.Digest, err = digest.SHA256FromSymbol(process)
-	if err != nil {
-		return process, err
-	}
-	return process, p.Symbols.RegisterConcreteSymbol(process)
+	return process, err
 }
 
-type Companion struct {
-	CoItem    *model.CoItem
-	Process   *process.Process
-	CoProcess *process.CoProcess
-}
-
-func (p *Parser) buildCompanionForItem(ctx *ParserContext, item *model.Item, pc process.ProcessContent) (*Companion, error) {
+func (p *Parser) buildCompanionForItem(ctx *ParserContext, item *model.Item, pc process.ProcessContent) (Companion, error) {
 	slog.Debug("build companions", "module", ctx.CurrentModule(), "item", item.Qualifier)
 
-	companion := &Companion{}
+	companion := make(Companion, 0)
 
 	coItem, err := p.buildCompanionCoItem(item)
 	if err != nil {
 		return companion, err
 	}
-	companion.CoItem = coItem
+	companion = append(companion, coItem)
 
 	coProcess, err := p.buildCompanionCoProcess(item, coItem)
 	if err != nil {
 		return companion, err
 	}
-	companion.CoProcess = coProcess
+	companion = append(companion, coProcess)
 
 	process, err := p.buildCompanionProcess(item, pc)
 	if err != nil {
 		return companion, err
 	}
-	companion.Process = process
+	companion = append(companion, process)
 	return companion, nil
 }
