@@ -6,7 +6,7 @@ import (
 	"github.com/tychonis/cyanotype/model"
 )
 
-func (p *Parser) parseContractBlock(ctx *ParserContext, block *hclsyntax.Block) (*model.Contract, error) {
+func (p *Parser) processContractBlock(ctx *ParserContext, block *hclsyntax.Block) (*model.Contract, error) {
 	name := block.Labels[0]
 
 	attrs, diags := block.Body.JustAttributes()

@@ -228,6 +228,7 @@ func (p *Parser) resolveBOMLineRef(ctx *ParserContext, ref Ref) (*model.Item, er
 			if err != nil {
 				return nil, err
 			}
+			unprocessed.qualifier = itemSym.GetQualifier()
 		}
 	}
 

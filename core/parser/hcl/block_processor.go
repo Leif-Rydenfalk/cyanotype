@@ -2,7 +2,7 @@ package hcl
 
 import (
 	"errors"
-	"log/slog"
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
@@ -15,8 +15,37 @@ import (
 	"github.com/tychonis/cyanotype/model"
 )
 
+func (p *Parser) Fuse(sym model.ConcreteSymbol) error {
+	var err error
+	switch s := sym.(type) {
+	case *model.Item:
+		s.Digest, err = digest.SHA256FromSymbol(sym)
+		if err != nil {
+			return err
+		}
+	case *model.CoItem:
+		s.Digest, err = digest.SHA256FromSymbol(sym)
+		if err != nil {
+			return err
+		}
+	case *process.Process:
+		s.Digest, err = digest.SHA256FromSymbol(sym)
+		if err != nil {
+			return err
+		}
+	case *process.CoProcess:
+		s.Digest, err = digest.SHA256FromSymbol(sym)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unsupported symbol type")
+	}
+	return p.Symbols.RegisterConcreteSymbol(sym)
+}
+
 func (p *Parser) ProcessSymbol(s *UnprocessedSymbol) (sym model.ConcreteSymbol, err error) {
-	// Already parsed before.
+	// Already processed before.
 	if s.qualifier != "" {
 		return p.Symbols.FindConcreteSymbol(s.qualifier)
 	}
@@ -27,24 +56,20 @@ func (p *Parser) ProcessSymbol(s *UnprocessedSymbol) (sym model.ConcreteSymbol, 
 	}
 	switch s.Block.Type {
 	case "item":
-		sym, err = p.parseItemBlock(s.Context, s.Block)
+		sym, err = p.processItemBlock(s.Context, s.Block)
 	case "coitem":
-		sym, err = p.parseCoItemBlock(s.Context, s.Block)
+		sym, err = p.processCoItemBlock(s.Context, s.Block)
 	case "process":
-		sym, err = p.parseProcessBlock(s.Context, s.Block)
+		sym, err = p.processProcessBlock(s.Context, s.Block)
 	case "coprocess":
-		sym, err = p.parseCoProcessBlock(s.Context, s.Block)
+		sym, err = p.processCoProcessBlock(s.Context, s.Block)
 	case "contract":
-		sym, err = p.parseContractBlock(s.Context, s.Block)
+		sym, err = p.processContractBlock(s.Context, s.Block)
 	default:
 		return nil, cerror.ErrorWithRange(errors.New("unknown block type"), s.Block.Range())
 	}
 	if err == nil {
-		// TODO: remove side effects here.
 		s.qualifier = sym.GetQualifier()
-		slog.Debug("saving symbol",
-			"qualifier", sym.GetQualifier(), "digest", sym.GetDigest())
-		p.Symbols.RegisterConcreteSymbol(sym)
 	} else {
 		err = cerror.ErrorWithRange(err, s.Block.Range())
 	}
@@ -94,39 +119,18 @@ func (p *Parser) getDetails(ctx *ParserContext, attrs hcl.Attributes) (stable.Ma
 	return ret, nil
 }
 
-func (p *Parser) parseItemBlock(ctx *ParserContext, block *hclsyntax.Block) (*model.Item, error) {
+func (p *Parser) processItemBlock(ctx *ParserContext, block *hclsyntax.Block) (*model.Item, error) {
 	name := block.Labels[0]
 	attrs, err := extractAttributes(block.Body)
 	if err != nil {
 		return nil, err
-	}
-	pn, _ := getString(attrs, "part_number")
-	src, _ := getString(attrs, "source")
-
-	var pc process.ProcessContent
-	fromAttr, ok := attrs["from"]
-	if ok {
-		from := parseBOMLinesAttr(ctx, fromAttr)
-		pc, err = p.processKeywordFROM(ctx, from)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		pc = &process.Abstract{}
 	}
 
 	item := &model.Item{}
 	item.Type = "item"
 	item.Qualifier = ctx.NameToQualifier(name)
 	item.Content = &model.ItemContent{
-		Name:       name,
-		Source:     src,
-		PartNumber: pn,
-	}
-
-	implAttr, ok := attrs["impl"]
-	if ok {
-		item.Implement, _ = p.resolveContractsLinesAttr(ctx, implAttr)
+		Name: name,
 	}
 
 	item.Content.Details, err = p.getDetails(ctx, attrs)
@@ -134,48 +138,36 @@ func (p *Parser) parseItemBlock(ctx *ParserContext, block *hclsyntax.Block) (*mo
 		return item, err
 	}
 
-	subContent, err := p.ParseSubBlocks(ctx, block)
-	if err != nil {
-		return item, err
-	}
-	item.Content.Artifacts = subContent.Artifacts
-
-	// Digest need to be computed before building companion processes,
-	// because the companion processes will reference the item digest.
-	item.Digest, err = digest.SHA256FromSymbol(item)
-	if err != nil {
-		return item, err
-	}
-
-	companion, err := p.buildCompanionForItem(ctx, item, pc)
+	canonicalNode, err := p.buildCanonicalNode(ctx, item)
 	if err != nil {
 		return nil, err
 	}
-	for _, s := range companion {
-		err := p.Symbols.RegisterConcreteSymbol(s)
-		if err != nil {
-			return nil, err
-		}
+
+	err = p.AssignSubBlocks(ctx, canonicalNode, block)
+	if err != nil {
+		return nil, err
 	}
+
+	err = p.ProcessCanonicalNode(ctx, canonicalNode)
+	if err != nil {
+		return nil, err
+	}
+
 	return item, err
 }
 
-func (p *Parser) parseCoItemBlock(ctx *ParserContext, block *hclsyntax.Block) (*model.CoItem, error) {
+func (p *Parser) processCoItemBlock(ctx *ParserContext, block *hclsyntax.Block) (*model.CoItem, error) {
 	name := block.Labels[0]
 	attrs, err := extractAttributes(block.Body)
 	if err != nil {
 		return nil, err
 	}
-	pn, _ := getString(attrs, "part_number")
-	src, _ := getString(attrs, "source")
 
 	coItem := &model.CoItem{}
 	coItem.Type = "coitem"
 	coItem.Qualifier = ctx.NameToQualifier(name)
 	coItem.Content = &model.ItemContent{
-		Name:       name,
-		Source:     src,
-		PartNumber: pn,
+		Name: name,
 	}
 
 	reqAttr, ok := attrs["req"]
@@ -188,17 +180,17 @@ func (p *Parser) parseCoItemBlock(ctx *ParserContext, block *hclsyntax.Block) (*
 		return coItem, err
 	}
 
-	subContent, err := p.ParseSubBlocks(ctx, block)
+	subContent, err := p.ProcessSubBlocks(ctx, block)
 	if err != nil {
 		return coItem, err
 	}
 	coItem.Content.Artifacts = subContent.Artifacts
 
-	coItem.Digest, err = digest.SHA256FromSymbol(coItem)
+	err = p.Fuse(coItem)
 	return coItem, err
 }
 
-func (p *Parser) parseProcessBlock(ctx *ParserContext, block *hclsyntax.Block) (ret *process.Process, err error) {
+func (p *Parser) processProcessBlock(ctx *ParserContext, block *hclsyntax.Block) (ret *process.Process, err error) {
 	name := block.Labels[0]
 	ret = &process.Process{}
 	ret.Type = "process"
@@ -207,11 +199,11 @@ func (p *Parser) parseProcessBlock(ctx *ParserContext, block *hclsyntax.Block) (
 	if diags.HasErrors() {
 		return nil, diags
 	}
-	ret.Digest, err = digest.SHA256FromSymbol(ret)
+	err = p.Fuse(ret)
 	return
 }
 
-func (p *Parser) parseCoProcessBlock(ctx *ParserContext, block *hclsyntax.Block) (ret *process.CoProcess, err error) {
+func (p *Parser) processCoProcessBlock(ctx *ParserContext, block *hclsyntax.Block) (ret *process.CoProcess, err error) {
 	name := block.Labels[0]
 	ret = &process.CoProcess{}
 	ret.Type = "coprocess"
@@ -220,6 +212,6 @@ func (p *Parser) parseCoProcessBlock(ctx *ParserContext, block *hclsyntax.Block)
 	if diags.HasErrors() {
 		return nil, diags
 	}
-	ret.Digest, err = digest.SHA256FromSymbol(ret)
+	err = p.Fuse(ret)
 	return
 }

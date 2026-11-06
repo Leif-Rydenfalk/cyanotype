@@ -79,9 +79,9 @@ func parseBOMLinesAttr(ctx *ParserContext, attr *hcl.Attribute) []*UnresolvedBOM
 	return comps
 }
 
-func (p *Parser) processKeywordFROM(ctx *ParserContext, from []*UnresolvedBOMLine) (process.ProcessContent, error) {
+func (p *Parser) resolvingBOMLines(ctx *ParserContext, from []*UnresolvedBOMLine) (process.ProcessContent, error) {
 	if len(from) <= 0 {
-		return nil, nil
+		return &process.Abstract{}, nil
 	}
 	drawing := false
 	for _, comp := range from {

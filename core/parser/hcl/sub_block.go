@@ -12,7 +12,7 @@ type SubBlockContent struct {
 	Artifacts []*model.Artifact
 }
 
-func (p *Parser) ParseSubBlocks(ctx *ParserContext, block *hclsyntax.Block) (*SubBlockContent, error) {
+func (p *Parser) ProcessSubBlocks(ctx *ParserContext, block *hclsyntax.Block) (*SubBlockContent, error) {
 	if block == nil {
 		return nil, fmt.Errorf("block is nil")
 	}
@@ -24,20 +24,24 @@ func (p *Parser) ParseSubBlocks(ctx *ParserContext, block *hclsyntax.Block) (*Su
 	for _, child := range block.Body.Blocks {
 		switch child.Type {
 		case "artifact":
-			artifact, err := p.parseArtifactBlock(ctx, child)
+			artifact, err := p.processArtifactBlock(ctx, child)
 			if err != nil {
 				return nil, err
 			}
-
 			p.Artifacts[artifact.Digest] = artifact
 			content.Artifacts = append(content.Artifacts, artifact)
 		case "contract":
-			_, err := p.parseContractBlock(ctx, child)
+			_, err := p.processContractBlock(ctx, child)
 			if err != nil {
 				return nil, err
 			}
 		case "operation":
-			err := p.parseOperationBlock(ctx, child)
+			err := p.processOperationBlock(ctx, child)
+			if err != nil {
+				return nil, err
+			}
+		case "component":
+			err := p.processComponentBlock(ctx, child)
 			if err != nil {
 				return nil, err
 			}

@@ -27,7 +27,7 @@ func (p *Parser) getArtifactDigest(_ *ParserContext, source string) (string, err
 	}
 }
 
-func (p *Parser) parseArtifactBlock(ctx *ParserContext, block *hclsyntax.Block) (*model.Artifact, error) {
+func (p *Parser) processArtifactBlock(ctx *ParserContext, block *hclsyntax.Block) (*model.Artifact, error) {
 	if len(block.Labels) != 1 {
 		return nil, fmt.Errorf(
 			"%s: artifact block must have exactly one label",
