@@ -153,7 +153,11 @@ func (p *Parser) processCompanionProcess(ctx *ParserContext, node *CanonicalNode
 		case "operation":
 			continue
 		case "component":
-			continue
+			comp, err := p.processComponentBlock(ctx, block)
+			if err != nil {
+				return err
+			}
+			components = append(components, comp)
 		default:
 			slog.Warn("Unsupported block for process, skipping", slog.String("type", block.Type))
 			continue

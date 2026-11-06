@@ -40,11 +40,6 @@ func (p *Parser) ProcessSubBlocks(ctx *ParserContext, block *hclsyntax.Block) (*
 			if err != nil {
 				return nil, err
 			}
-		case "component":
-			err := p.processComponentBlock(ctx, child)
-			if err != nil {
-				return nil, err
-			}
 		default:
 			slog.Warn("Unrecognized sub block, skipping", slog.String("type", child.Type))
 			continue
