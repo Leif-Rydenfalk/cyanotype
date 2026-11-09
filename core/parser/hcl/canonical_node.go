@@ -74,6 +74,7 @@ func (p *Parser) AssignSubBlocks(ctx *ParserContext, node *CanonicalNode, block 
 		case "contract":
 			node.Item.Blocks = append(node.Item.Blocks, child)
 			node.Process.Blocks = append(node.Process.Blocks, child)
+			node.CoItem.Blocks = append(node.CoItem.Blocks, child)
 		case "operation":
 			node.Process.Blocks = append(node.Process.Blocks, child)
 		case "component":
@@ -160,7 +161,6 @@ func (p *Parser) processCompanionProcess(ctx *ParserContext, node *CanonicalNode
 			components = append(components, comp)
 		default:
 			slog.Warn("Unsupported block for process, skipping", slog.String("type", block.Type))
-			continue
 		}
 	}
 	pc, err := p.resolvingBOMLines(ctx, components)

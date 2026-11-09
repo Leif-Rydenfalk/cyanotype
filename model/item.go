@@ -31,7 +31,6 @@ type CoItem struct {
 
 type ItemContent struct {
 	Name       string      `json:"name" yaml:"name"`
-	Source     string      `json:"source,omitempty" yaml:"source,omitempty"`
 	PartNumber string      `json:"part_number" yaml:"part_number"`
 	Artifacts  []*Artifact `json:"artifacts,omitempty" yaml:"artifacts,omitempty"`
 	Details    stable.Map  `json:"details" yaml:"details"`

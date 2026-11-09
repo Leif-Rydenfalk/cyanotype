@@ -8,6 +8,7 @@ type ContractID = Digest
 
 type Contract struct {
 	Type      string     `json:"type" yaml:"type"`
+	Category  string     `json:"category" yaml:"category"`
 	Qualifier string     `json:"qualifier" yaml:"qualifier"`
 	Name      string     `json:"name" yaml:"name"`
 	Params    stable.Map `json:"params" yaml:"params"`

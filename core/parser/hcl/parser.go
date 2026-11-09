@@ -32,7 +32,8 @@ type Parser struct {
 }
 
 type ParserContext struct {
-	ImportStack []string
+	ImportStack   []string
+	CurrentSymbol model.ConcreteSymbol
 }
 
 func NewParserContext() *ParserContext {
@@ -57,6 +58,9 @@ func (ctx *ParserContext) CurrentModule() string {
 }
 
 func (ctx *ParserContext) NameToQualifier(name string) string {
+	if ctx.CurrentSymbol != nil {
+		return ctx.CurrentSymbol.GetQualifier() + "." + name
+	}
 	prefix := ctx.CurrentModule()
 	if prefix == "." {
 		prefix = ""

@@ -94,9 +94,7 @@ func (p *Parser) resolveContractsLinesAttr(ctx *ParserContext, attr *hcl.Attribu
 
 var RESERVED = map[string]struct{}{
 	"part_number": {},
-	"source":      {},
 	"from":        {},
-	"impl":        {},
 }
 
 func (p *Parser) getDetails(ctx *ParserContext, attrs hcl.Attributes) (stable.Map, error) {
@@ -168,11 +166,6 @@ func (p *Parser) processCoItemBlock(ctx *ParserContext, block *hclsyntax.Block) 
 	coItem.Qualifier = ctx.NameToQualifier(name)
 	coItem.Content = &model.ItemContent{
 		Name: name,
-	}
-
-	reqAttr, ok := attrs["req"]
-	if ok {
-		coItem.Require, _ = p.resolveContractsLinesAttr(ctx, reqAttr)
 	}
 
 	coItem.Content.Details, err = p.getDetails(ctx, attrs)
