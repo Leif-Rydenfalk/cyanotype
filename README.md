@@ -377,3 +377,10 @@ All these operations run locally without requiring a server or authentication.
 - [Tychonis](https://tychonis.com)
 
 **Note:** Cyanotype is under active development. CLI commands, file formats, and data models may change between releases.
+
+## License
+
+Copyright © 2026 Tychonis LLC
+
+Cyanotype is licensed under the Apache License, Version 2.0.
+See [LICENSE](LICENSE).
