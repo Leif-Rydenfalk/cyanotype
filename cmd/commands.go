@@ -20,6 +20,7 @@ import (
 	"github.com/tychonis/cyanotype/cmd/scene"
 	"github.com/tychonis/cyanotype/cmd/symbol"
 	"github.com/tychonis/cyanotype/cmd/tree"
+	"github.com/tychonis/cyanotype/cmd/verify"
 	"github.com/tychonis/cyanotype/cmd/version"
 )
 
@@ -76,6 +77,7 @@ func Run() {
 		symbol.Cmd,
 		artifact.Cmd,
 		format.Cmd,
+		verify.Cmd,
 	)
 	silenceRunEUsage(rootCmd)
 
